@@ -1,54 +1,42 @@
-import express from 'express';
-import 'dotenv/config';
-import cors from 'cors';
-import pino from 'pino-http';
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectMongoDB = require('./db/connectMongoDB');
+const notesRoutes = require('./routes/notesRoutes');
 
-const PORT = process.env.PORT || 3030;
+const logger = require('./middleware/logger');
+const notFoundHandler = require('./middleware/notFoundHandler');
+const errorHandler = require('./middleware/errorHandler');
+
+const PORT = process.env.PORT || 3000;
+const MONGO_URL = process.env.MONGO_URL;
+
 const app = express();
 
 app.use(express.json());
 app.use(cors());
-app.use(
-    pino({
-        level: 'info',
-        transport: {
-            target: 'pino-pretty',
-            options: {
-                colorize: true,
-                translateTime: 'HH:MM:ss',
-                ignore: 'pid,hostname',
-                messageFormat:
-                    '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-                hideObject: true,
-            },
-        },
-    }),
-);
+app.use(logger);
 
-app.get('/test-error', () => {
-    throw new Error('Simulated server error');
-});
+app.use('/notes', notesRoutes);
 
-app.get('/notes', (req, res) => {
-    res.status(200).json({ message: 'Retrieved all notes' });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
-app.get('/notes/:noteId', (req, res) => {
-    const id_param = req.params.noteId;
-    res.status(200).json({ message: `Retrieved note with ID: ${id_param}` });
-});
+const start = async () => {
+    if (!MONGO_URL) {
+        console.error('MONGO_URL is not defined');
+        process.exit(1);
+    }
 
-app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-});
+    try {
+        await connectMongoDB(MONGO_URL);
+        app.listen(PORT, () => {
+            console.log(`✅ Server is running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error('❌ Failed to start server:', err.message);
+        process.exit(1);
+    }
+};
 
-app.use((err, req, res, next) => {
-    console.error('Error', err.message);
-    res.status(500).json({
-        message: err.message,
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`server is running on port  ${PORT}`);
-});
+start();
