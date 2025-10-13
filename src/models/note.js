@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ALLOWED_TAGS = [
     'Work', 'Personal', 'Meeting', 'Shopping',
@@ -12,4 +12,4 @@ const noteSchema = new mongoose.Schema({
     tag: { type: String, enum: ALLOWED_TAGS, default: 'Todo' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Note', noteSchema);
+export default mongoose.model('Note', noteSchema);
