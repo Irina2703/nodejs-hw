@@ -1,12 +1,16 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const connectMongoDB = require('./db/connectMongoDB');
-const notesRoutes = require('./routes/notesRoutes');
+// src/server.js
 
-const logger = require('./middleware/logger');
-const notFoundHandler = require('./middleware/notFoundHandler');
-const errorHandler = require('./middleware/errorHandler');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import connectMongoDB from './db/connectMongoDB.js';
+import notesRoutes from './routes/notesRoutes.js';
+
+import logger from './middleware/logger.js';
+import notFoundHandler from './middleware/notFoundHandler.js';
+import errorHandler from './middleware/errorHandler.js';
+
+dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGO_URL;
