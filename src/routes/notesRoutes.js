@@ -1,13 +1,19 @@
-// src/routes/notesRoutes.js
 import express from 'express';
 import { celebrate } from 'celebrate';
-import Note from '../models/noteModel.js';
-import { getAllNotesSchema, noteIdSchema, createNoteSchema, updateNoteSchema } from '../validations/notesValidation.js';
+import Note from '../models/note.js';
+import {
+    getAllNotesSchema,
+    noteIdSchema,
+    createNoteSchema,
+    updateNoteSchema
+} from '../validations/notesValidation.js';
 import createHttpError from 'http-errors';
 
 const router = express.Router();
 
-// GET /notes з пошуком, фільтрацією і пагінацією
+/**
+ * GET /notes — з пошуком, фільтрацією і пагінацією
+ */
 router.get('/', celebrate(getAllNotesSchema), async (req, res, next) => {
     try {
         const { page = 1, perPage = 10, tag, search } = req.query;
@@ -19,7 +25,7 @@ router.get('/', celebrate(getAllNotesSchema), async (req, res, next) => {
         const totalNotes = await Note.countDocuments(filter);
         const notes = await Note.find(filter)
             .skip((page - 1) * perPage)
-            .limit(perPage);
+            .limit(Number(perPage));
 
         res.status(200).json({
             page: Number(page),
@@ -33,7 +39,9 @@ router.get('/', celebrate(getAllNotesSchema), async (req, res, next) => {
     }
 });
 
-// GET /notes/:noteId
+/**
+ * GET /notes/:noteId — отримати одну нотатку
+ */
 router.get('/:noteId', celebrate(noteIdSchema), async (req, res, next) => {
     try {
         const note = await Note.findById(req.params.noteId);
@@ -44,7 +52,9 @@ router.get('/:noteId', celebrate(noteIdSchema), async (req, res, next) => {
     }
 });
 
-// POST /notes
+/**
+ * POST /notes — створити нову нотатку
+ */
 router.post('/', celebrate(createNoteSchema), async (req, res, next) => {
     try {
         const newNote = await Note.create(req.body);
@@ -54,7 +64,9 @@ router.post('/', celebrate(createNoteSchema), async (req, res, next) => {
     }
 });
 
-// PATCH /notes/:noteId
+/**
+ * PATCH /notes/:noteId — оновити нотатку
+ */
 router.patch('/:noteId', celebrate(updateNoteSchema), async (req, res, next) => {
     try {
         const updatedNote = await Note.findByIdAndUpdate(req.params.noteId, req.body, { new: true });
@@ -65,7 +77,9 @@ router.patch('/:noteId', celebrate(updateNoteSchema), async (req, res, next) => 
     }
 });
 
-// DELETE /notes/:noteId
+/**
+ * DELETE /notes/:noteId — видалити нотатку
+ */
 router.delete('/:noteId', celebrate(noteIdSchema), async (req, res, next) => {
     try {
         const deletedNote = await Note.findByIdAndDelete(req.params.noteId);
