@@ -1,37 +1,28 @@
 import express from 'express';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import cors from 'cors';
 import { errors } from 'celebrate';
-import notesRoutes from './routes/notesRoutes.js';
-import createHttpError from 'http-errors';
 
-dotenv.config();
+import notesRoutes from './routes/notesRoutes.js';
+import { logger } from './middleware/logger.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
 const app = express();
 
 app.use(express.json());
+app.use(cors());
+app.use(logger);
 
-// Проста перевірка сервера на /
-app.get('/', (req, res) => {
-    res.json({ message: 'Server is running!' });
-});
+// ✅ маршрути
+app.use(notesRoutes);
 
-// Підключення маршруту нотаток
-app.use('/notes', notesRoutes);
 
-// Обробка 404 для всіх інших маршрутів
-app.use((req, res, next) => next(createHttpError(404, 'Route not found')));
-
-// Celebrate errors
 app.use(errors());
 
-// Глобальна обробка помилок
-app.use((err, req, res, next) => {
-    res.status(err.status || 500).json({ message: err.message });
-});
 
-// Підключення до MongoDB
-mongoose.connect(process.env.MONGO_URL)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error(err));
+app.use(notFoundHandler);
+
+
+app.use(errorHandler);
 
 export default app;
