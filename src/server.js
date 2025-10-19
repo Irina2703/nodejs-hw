@@ -4,7 +4,8 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import { errors } from 'celebrate';
 import notesRouter from './routes/notesRoutes.js';
-import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { errorHandler } from './middleware/errorHandler.js';
 import { connectMongoDB } from './db/connectMongoDB.js';
 
 dotenv.config();
