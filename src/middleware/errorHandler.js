@@ -1,9 +1,24 @@
-import { HttpError } from 'http-errors';
+// src/middlewares/errorHandlers.js
 
+// 404 — коли маршрут не знайдено
+export const notFoundHandler = (req, res, next) => {
+    res.status(404).json({
+        status: 'error',
+        code: 404,
+        message: 'Route not found',
+    });
+};
+
+// Загальний обробник помилок
 export const errorHandler = (err, req, res, next) => {
-    if (err instanceof HttpError) {
-        res.status(err.statusCode || 500).json({ message: err.message });
-    } else {
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+    console.error('❌ Error:', err.message);
+
+    const status = err.status || 500;
+    const message = err.message || 'Internal Server Error';
+
+    res.status(status).json({
+        status: 'error',
+        code: status,
+        message,
+    });
 };
