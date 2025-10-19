@@ -1,15 +1,35 @@
+// src/server.js
+import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import app from './app.js';
+import morgan from 'morgan';
+import { errors } from 'celebrate';
+import notesRouter from './routes/notesRoutes.js';
+import { notFoundHandler, errorHandler } from './middlewares/errorHandlers.js';
+import { connectMongoDB } from './db/connectMongoDB.js';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 3030;
-const MONGO_URL = process.env.MONGO_URL;
+const app = express();
 
+// ===== Middleware =====
+app.use(morgan('dev'));
+app.use(express.json());
+
+// ===== Routes =====
+app.use('/notes', notesRouter);
+
+// ===== Celebrate errors =====
+app.use(errors());
+
+// ===== Custom error handlers =====
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+// ===== Start server after DB connection =====
 async function startServer() {
     try {
-        await mongoose.connect(MONGO_URL);
+        await connectMongoDB();
         console.log('✅ Connected to MongoDB');
 
         app.listen(PORT, () => {
