@@ -1,12 +1,14 @@
 // src/server.js
 import express from 'express';
 import dotenv from 'dotenv';
-import morgan from 'morgan';
+import cors from 'cors';
 import { errors } from 'celebrate';
+
 import notesRouter from './routes/notesRoutes.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { connectMongoDB } from './db/connectMongoDB.js';
+import { logger } from './middleware/logger.js';
 
 dotenv.config();
 
@@ -14,11 +16,12 @@ const PORT = process.env.PORT || 3030;
 const app = express();
 
 // ===== Middleware =====
-app.use(morgan('dev'));
+app.use(cors());
 app.use(express.json());
+app.use(logger);
 
 // ===== Routes =====
-app.use('/notes', notesRouter);
+app.use(notesRouter);
 
 // ===== Celebrate errors =====
 app.use(errors());
