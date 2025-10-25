@@ -1,3 +1,4 @@
+// src/routes/notesRoutes.js
 import express from 'express';
 import { celebrate } from 'celebrate';
 import {
@@ -5,19 +6,18 @@ import {
     getNoteById,
     createNote,
     updateNote,
-    deleteNote
-} from '../controllers/noteController.js';
+    deleteNote,
+} from '../controllers/notesController.js';
 import { authenticate } from '../middleware/authenticate.js';
 import {
     getAllNotesSchema,
     noteIdSchema,
     createNoteSchema,
-    updateNoteSchema
+    updateNoteSchema,
 } from '../validations/notesValidation.js';
 
 const router = express.Router();
 
-// Приватные маршруты
 router.use(authenticate);
 
 router.get('/', celebrate(getAllNotesSchema), getAllNotes);

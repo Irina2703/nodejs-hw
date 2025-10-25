@@ -1,3 +1,4 @@
+// src/controllers/notesController.js
 import createHttpError from 'http-errors';
 import { Note } from '../models/note.js';
 
@@ -8,7 +9,9 @@ export const createNote = async (req, res, next) => {
 
         const note = await Note.create({ title, content, tag, userId });
         res.status(201).json(note);
-    } catch (err) { next(err); }
+    } catch (err) {
+        next(err);
+    }
 };
 
 export const getAllNotes = async (req, res, next) => {
@@ -27,16 +30,29 @@ export const getAllNotes = async (req, res, next) => {
             .skip((page - 1) * perPage)
             .limit(Number(perPage));
 
-        res.status(200).json({ page: Number(page), perPage: Number(perPage), totalNotes, totalPages, notes });
-    } catch (err) { next(err); }
+        res.status(200).json({
+            page: Number(page),
+            perPage: Number(perPage),
+            totalNotes,
+            totalPages,
+            notes,
+        });
+    } catch (err) {
+        next(err);
+    }
 };
 
 export const getNoteById = async (req, res, next) => {
     try {
-        const note = await Note.findOne({ _id: req.params.noteId, userId: req.user._id });
+        const note = await Note.findOne({
+            _id: req.params.noteId,
+            userId: req.user._id,
+        });
         if (!note) throw createHttpError(404, 'Note not found');
         res.json(note);
-    } catch (err) { next(err); }
+    } catch (err) {
+        next(err);
+    }
 };
 
 export const updateNote = async (req, res, next) => {
@@ -48,13 +64,22 @@ export const updateNote = async (req, res, next) => {
         );
         if (!note) throw createHttpError(404, 'Note not found');
         res.json(note);
-    } catch (err) { next(err); }
+    } catch (err) {
+        next(err);
+    }
 };
 
 export const deleteNote = async (req, res, next) => {
     try {
-        const note = await Note.findOneAndDelete({ _id: req.params.noteId, userId: req.user._id });
+        const note = await Note.findOneAndDelete({
+            _id: req.params.noteId,
+            userId: req.user._id,
+        });
         if (!note) throw createHttpError(404, 'Note not found');
-        res.sendStatus(204);
-    } catch (err) { next(err); }
+
+        // 🔥 зміна тут — повертаємо видалену нотатку
+        res.status(200).json(note);
+    } catch (err) {
+        next(err);
+    }
 };
