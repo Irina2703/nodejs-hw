@@ -1,22 +1,27 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema({
-    username: { type: String, trim: true },
-    email: { type: String, required: true, unique: true, trim: true },
-    password: { type: String, required: true, minlength: 8 },
-}, { timestamps: true });
+    email: { type: String, required: true, unique: true },
+    username: { type: String },
+    password: { type: String, required: true },
+    avatar: {
+        type: String,
+        default: "https://ac.goit.global/fullstack/react/default-avatar.jpg",
+    },
+});
 
-// удаляем пароль при отправке ответа
-userSchema.methods.toJSON = function () {
-    const obj = this.toObject();
-    delete obj.password;
-    return obj;
-};
-
-// pre-hook: если username не указан, ставим email
-userSchema.pre('save', function (next) {
+userSchema.pre("save", function (next) {
     if (!this.username) this.username = this.email;
     next();
 });
 
-export const User = mongoose.model('User', userSchema);
+// (якщо ще не маєш хешування на save — зазвичай хешують пароль при створенні)
+userSchema.pre("save", async function (next) {
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+const User = mongoose.model("User", userSchema);
+export default User;
