@@ -1,15 +1,14 @@
-// src/models/note.js
 import mongoose from 'mongoose';
 import { TAGS } from '../constants/tags.js';
 
 const noteSchema = new mongoose.Schema(
     {
         title: { type: String, required: true, trim: true },
-        content: { type: String, trim: true, default: '' }, // ✅ виправлено
-        tags: {
-            type: [String],
+        content: { type: String, trim: true, default: '' },
+        tag: {
+            type: String,
             enum: TAGS,
-            default: [],
+            default: 'Todo',
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -20,7 +19,6 @@ const noteSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// 🔧 Text index
 noteSchema.index({ title: 'text', content: 'text' });
 
 export const Note = mongoose.model('Note', noteSchema);

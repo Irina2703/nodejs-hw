@@ -1,4 +1,3 @@
-// src/server.js
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -18,23 +17,23 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-// 🔧 Middleware
+// Middleware
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(logger);
 
-// 🔧 Routes
+// Routes
 app.use('/auth', authRoutes);
 app.use('/notes', notesRoutes);
 
-// 🔧 Error handlers
+// Error handlers
 app.use(notFoundHandler);
 app.use(celebrateErrors());
 app.use(errorHandler);
 
-// 🔧 Server start
+// Server start
 const startServer = async () => {
     try {
         await connectMongoDB();
