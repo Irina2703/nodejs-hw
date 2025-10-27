@@ -1,32 +1,24 @@
-import nodemailer from "nodemailer";
-import createHttpError from "http-errors";
+import express, { Request, Response } from "express";
+import { Resend } from "resend";
 
-const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM } = process.env;
+const app = express();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM) {
-    throw new Error("Missing SMTP environment variables");
-}
+app.get("/", async (req: Request, res: Response) => {
+    const { data, error } = await resend.emails.send({
+        from: "Acme <onboarding@resend.dev>",
+        to: ["delivered@resend.dev"],
+        subject: "hello world",
+        html: "<strong>it works!</strong>",
+    });
 
-const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: Number(SMTP_PORT) === 465,
-    auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASSWORD,
-    },
+    if (error) {
+        return res.status(400).json({ error });
+    }
+
+    res.status(200).json({ data });
 });
 
-export const sendEmail = async ({ to, subject, html }) => {
-    try {
-        await transporter.sendMail({
-            from: SMTP_FROM,
-            to,
-            subject,
-            html,
-        });
-    } catch (error) {
-        console.error("Email sending error:", error.message);
-        throw createHttpError(500, "Failed to send the email, please try again later.");
-    }
-};
+app.listen(3000, () => {
+    console.log("Listening on http://localhost:3000");
+});
