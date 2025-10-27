@@ -1,10 +1,10 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { Resend } from "resend";
 
 const app = express();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-app.get("/", async (req: Request, res: Response) => {
+app.get("/", async (req, res) => {
     const { data, error } = await resend.emails.send({
         from: "Acme <onboarding@resend.dev>",
         to: ["delivered@resend.dev"],
