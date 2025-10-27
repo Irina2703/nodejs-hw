@@ -1,21 +1,19 @@
-// src/models/note.js
 import mongoose from 'mongoose';
-import { TAGS } from '../constants/tags.js'; // 🔥 додано з розширенням .js
+import { TAGS } from '../constants/tags.js';
 
 const noteSchema = new mongoose.Schema(
     {
-        title: { type: String, required: true, trim: true },   // 🔥 додано trim
-        content: { type: String, required: true, trim: true }, // 🔥 required + trim
+        title: { type: String, required: true, trim: true },
+        content: { type: String, trim: true, default: '' },
         tag: {
             type: String,
-            enum: TAGS,           // 🔥 перевірка через TAGS
-            default: 'Todo',      // 🔥 опціональне поле
-            required: false
+            enum: TAGS,
+            default: 'Todo',
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            required: true
+            required: true,
         },
     },
     { timestamps: true }

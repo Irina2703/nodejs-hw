@@ -1,4 +1,3 @@
-// src/server.js
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -8,7 +7,7 @@ import { errors as celebrateErrors } from 'celebrate';
 
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
-import authRoutes from './routes/authRoutes.js'; // 🔥 додано
+import authRoutes from './routes/authRoutes.js';
 import { logger } from './middleware/logger.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -18,22 +17,24 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 const app = express();
 
+// Middleware
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
-app.use(cookieParser()); // 🔥 додано
+app.use(cookieParser());
 app.use(logger);
 
-// 🔥 правильна реєстрація роутерів
+// Routes
 app.use('/auth', authRoutes);
 app.use('/notes', notesRoutes);
 
-// 🔥 правильний порядок middleware для помилок
+// Error handlers
 app.use(notFoundHandler);
 app.use(celebrateErrors());
 app.use(errorHandler);
 
-const start = async () => {
+// Server start
+const startServer = async () => {
     try {
         await connectMongoDB();
         app.listen(PORT, () => console.log(`✅ Server is running on port ${PORT}`));
@@ -43,6 +44,6 @@ const start = async () => {
     }
 };
 
-start();
+startServer();
 
 export default app;
