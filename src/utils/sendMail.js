@@ -1,24 +1,21 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
+    port: Number(process.env.SMTP_PORT),
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
     },
 });
 
-const sendEmail = async ({ to, subject, html }) => {
+export const sendEmail = async ({ to, subject, html }) => {
     const mailOptions = {
-        from: process.env.SMTP_FROM,
+        from: process.env.SMTP_USER,
         to,
         subject,
         html,
     };
 
-    await transporter.sendMail(mailOptions);
+    return transporter.sendMail(mailOptions);
 };
-
-// ✅ default export
-export default sendEmail;

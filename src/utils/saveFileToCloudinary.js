@@ -1,30 +1,17 @@
-const nodemailer = require('nodemailer');
+import { v2 as cloudinary } from 'cloudinary';
 
-const {
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASSWORD,
-    SMTP_FROM
-} = process.env;
-
-const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASSWORD,
-    },
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-async function sendEmail({ to, subject, html }) {
-    const mailOptions = {
-        from: SMTP_FROM,
-        to,
-        subject,
-        html,
-    };
-    return transporter.sendMail(mailOptions);
-}
-
-module.exports = sendEmail;
+export const saveFileToCloudinary = async (buffer) => {
+    return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream({ resource_type: 'image' }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+        });
+        stream.end(buffer);
+    });
+};
