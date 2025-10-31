@@ -1,20 +1,35 @@
-import mongoose from 'mongoose';
+import { model, Schema } from 'mongoose';
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
     {
-        email: { type: String, required: true, unique: true },
-        username: { type: String },
-        password: { type: String, required: true },
+        username: {
+            type: String,
+            trim: true,
+        },
+        email: {
+            type: String,
+            trim: true,
+            unique: true,
+            required: true,
+        },
+        password: {
+            type: String,
+            required: true,
+        },
         avatar: {
             type: String,
+            required: false,
             default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        versionKey: false,
+    },
 );
 
 userSchema.pre('save', function (next) {
-    if (this.isModified('email') || !this.username) {
+    if (!this.username) {
         this.username = this.email;
     }
     next();
@@ -26,4 +41,4 @@ userSchema.methods.toJSON = function () {
     return obj;
 };
 
-export const User = mongoose.model('User', userSchema);
+export const User = model('User', userSchema);
