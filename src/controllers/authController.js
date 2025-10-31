@@ -4,17 +4,101 @@ import bcrypt from "bcrypt";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
-import { User } from "../models/user.js";
-import { sendEmail } from "../utils/sendMail.js";
+import { User } from "../models/user.js"; // ✅ исправленный импорт
+import { sendEmail } from "../utils/sendMail.js"; // ✅ исправленный импорт
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || "http://localhost:3001";
 
+// === Reset password email template
 const templatePath = path.resolve("src/templates/reset-password-email.html");
 const templateSource = fs.readFileSync(templatePath, "utf8");
 const template = handlebars.compile(templateSource);
 
-// ===> ВАЖЛИВО: іменований експорт
+// === Register user
+export const registerUser = async (req, res, next) => {
+    try {
+        const { email, password, username } = req.body;
+        const existing = await User.findOne({ email });
+        if (existing) {
+            return next(createHttpError(409, "User already exists"));
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+        const user = await User.create({
+            email,
+            password: hashed,
+            username: username || email,
+        });
+
+        res.status(201).json({
+            message: "User registered successfully",
+            user: user.toJSON(),
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// === Login user
+export const loginUser = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return next(createHttpError(401, "Invalid email or password"));
+        }
+
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) {
+            return next(createHttpError(401, "Invalid email or password"));
+        }
+
+        const token = jwt.sign({ sub: user._id, email: user.email }, JWT_SECRET, {
+            expiresIn: "1h",
+        });
+
+        res.cookie("accessToken", token, { httpOnly: true, sameSite: "none", secure: true });
+        res.json({ message: "Login successful" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// === Logout user
+export const logoutUser = async (req, res, next) => {
+    try {
+        res.clearCookie("accessToken");
+        res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// === Refresh session (simple mock)
+export const refreshUserSession = async (req, res, next) => {
+    try {
+        const token = req.cookies?.accessToken;
+        if (!token) {
+            return next(createHttpError(401, "Not authenticated"));
+        }
+
+        const payload = jwt.verify(token, JWT_SECRET);
+        const newToken = jwt.sign(
+            { sub: payload.sub, email: payload.email },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("accessToken", newToken, { httpOnly: true, sameSite: "none", secure: true });
+        res.status(200).json({ message: "Session refreshed" });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// === Request password reset email
 export const requestResetEmail = async (req, res, next) => {
     try {
         const { email } = req.body;
@@ -42,7 +126,7 @@ export const requestResetEmail = async (req, res, next) => {
     }
 };
 
-// ===> І другий експорт
+// === Reset password
 export const resetPassword = async (req, res, next) => {
     try {
         const { token, password } = req.body;
