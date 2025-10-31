@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
 import { User } from "../models/user.js";
-import sendEmail from "../utils/sendMail.js";
+import { sendEmail } from "../utils/sendMail.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_DOMAIN = process.env.FRONTEND_DOMAIN || "http://localhost:3001";
