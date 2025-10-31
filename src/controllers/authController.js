@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import fs from "fs";
 import path from "path";
 import handlebars from "handlebars";
-import User from "../models/user.js";
+import { User } from "../models/user.js";
 import sendEmail from "../utils/sendMail.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
